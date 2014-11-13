@@ -11,6 +11,7 @@ To use this one must first define some typed keys. e.g.
     private TypedKey<Address> userAddressKey = DefaultTypedKey.typedKey();
 
 Once the keys have been defined they can be used to store values in a TypedMap. e.g.
+
     TypedMap executionContext = TypedMapDecorator.typedMap();
     ...
     executionContext.putTyped(userNameKey, userName);
