@@ -31,4 +31,14 @@ public class DefaultTypedKey<T> implements TypedKey<T> {
     public static <T> DefaultTypedKey<T> typedKey(){
         return new DefaultTypedKey<T>();
     }
+
+    @Override
+    public boolean verify(Object object) {
+        return true;
+    }
+
+    @Override
+    public Class<T> getType() {
+        return null;
+    }
 }

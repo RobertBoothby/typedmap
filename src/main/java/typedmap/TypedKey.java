@@ -25,4 +25,8 @@ package typedmap;
  * @author Robert Boothby.
  */
 public interface TypedKey<T> {
+
+    boolean verify(Object object);
+
+    Class<T> getType();
 }

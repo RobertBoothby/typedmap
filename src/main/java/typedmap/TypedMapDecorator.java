@@ -53,20 +53,41 @@ public class TypedMapDecorator implements TypedMap {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T putTyped(TypedKey<T> key, T value) {
-        return (T) wrappedMap.put(key, value);
+    public <T> T getTyped(TypedKey<T> key) {
+        Object o = this.get(key);
+
+        //This is an interesting one - this check is done here to preserve the map interface semantic where a
+        //key supplied for retrieval need only be equal to the key used for storage. Not sure I agree but there it is.
+        if(!key.verify(o)){
+            throw new ClassCastException("The type of the key {" + key.getType() +
+                    "} does not match the type of the stored object {" + o.getClass() + "}.");
+        }
+
+        return (T) o;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getTyped(TypedKey<T> key) {
-        return (T) wrappedMap.get(key);
+    public <T> T putTyped(TypedKey<T> key, T value) {
+        Object oldValue = this.put(key, value);
+        if(key.verify(oldValue)) {
+            return (T) oldValue;
+        } else {
+            //This may never happen but I'm going POLS this and return null, not throwing an exception.
+            return null;
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T removeTyped(TypedKey<T> key) {
-        return (T) wrappedMap.remove(key);
+        Object oldValue = this.remove(key);
+        if(key.verify(oldValue)) {
+            return (T) oldValue;
+        } else {
+            //This may never happen but I'm going POLS this and return null, not throwing an exception.
+            return null;
+        }
     }
 
     @Override
@@ -96,7 +117,12 @@ public class TypedMapDecorator implements TypedMap {
 
     @Override
     public Object put(TypedKey<?> key, Object value) {
-        return wrappedMap.put(key, value);
+        if(key.verify(value)) {
+            return wrappedMap.put(key, value);
+        } else {
+            throw new ClassCastException("The type of the key {" + key.getType() +
+                    "} does not match the type of the object to be stored {" + value.getClass() + "}.");
+        }
     }
 
     @Override
