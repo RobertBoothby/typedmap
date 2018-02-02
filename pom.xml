@@ -6,7 +6,7 @@
     <name>TypedMap</name>
     <groupId>com.robertboothby</groupId>
     <artifactId>TypedMap</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <description>
         This simple project creates a new type of collection interface called a TypedMap. It extends the Java Map
         interface to add typed methods where appropriate. These typed methods allow the use of 'Typed Keys' for storage

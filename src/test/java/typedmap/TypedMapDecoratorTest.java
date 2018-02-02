@@ -15,12 +15,16 @@ limitations under the License.
 */
 package typedmap;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static typedmap.DefaultTypedKey.typedKey;
 import static typedmap.TypedMapDecorator.typedMap;
 
 /**
@@ -30,9 +34,11 @@ import static typedmap.TypedMapDecorator.typedMap;
  */
 public class TypedMapDecoratorTest {
 
-    TypedKey<String> stringTypedKey = typedKey();
-    TypedKey<String> otherStringTypedKey = typedKey();
-    TypedKey<Integer> integerTypedKey = typedKey();
+    TypedKey<String> stringTypedKey = DefaultTypedKey.typedKey();
+    TypedKey<String> otherStringTypedKey = DefaultTypedKey.typedKey();
+    TypedKey<Integer> integerTypedKey = DefaultTypedKey.typedKey();
+    TypedKey<String> stringStrongTypedKey = StrongTypedKey.typedKey(String.class);
+
 
     @Test
     public void shouldStoreAndRetrieveTypedValueWithoutACast() {
@@ -93,4 +99,71 @@ public class TypedMapDecoratorTest {
 
         assertThat(removedValue, is("aString!"));
     }
+
+    @Test
+    public void shouldStoreCorrectStrongTypedValue(){
+        //Given
+        TypedMap typedMap = typedMap();
+
+        //When
+        typedMap.putTyped(stringStrongTypedKey, "ABCDEF");
+
+        //Then
+        assertThat(typedMap.containsKey(stringStrongTypedKey), is(true));
+        assertThat(typedMap.containsValue("ABCDEF"), is(true));
+
+        String actual = typedMap.getTyped(stringStrongTypedKey);
+        assertThat(actual, is("ABCDEF"));
+
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldRefuseToStoreWrongStrongTypeDespiteCasting(){
+        //Given
+        TypedMap typedMap = typedMap();
+
+        //This is exactly what you should not be doing with typed keys but is useful for the test!!!
+        TypedKey castKey = stringStrongTypedKey;
+        TypedKey<Object> objectCastKey = (TypedKey<Object>) castKey;
+
+        try {
+            //When
+            typedMap.putTyped(objectCastKey, new Object());
+            //Then
+            Assert.fail("Should have thrown a class cast exception");
+        } catch (ClassCastException e) {
+            assertThat(e.getMessage(), is("The type of the key {class java.lang.String} does not match the type of the object to be stored {class java.lang.Object}."));
+        }
+    }
+
+    @Test
+    public void shouldNotReturnOldValueIfOfWrongStrongTypeForTypedPut(){
+        //Given
+        Map<TypedKey<?>, Object> map = new HashMap<TypedKey<?>, Object>();
+        TypedMapDecorator typedMap = new TypedMapDecorator(map);
+        map.put(stringStrongTypedKey, 1);
+
+        //When
+        String result = typedMap.putTyped(stringStrongTypedKey, "ABCDEF");
+
+        //Then
+        assertThat(result, is(nullValue()));
+
+    }
+
+    @Test
+    public void shouldNotReturnOldValueIfOfWrongStrongTypeForTypedRemove(){
+        //Given
+        Map<TypedKey<?>, Object> map = new HashMap<TypedKey<?>, Object>();
+        TypedMapDecorator typedMap = new TypedMapDecorator(map);
+        map.put(stringStrongTypedKey, 1);
+
+        //When
+        String result = typedMap.removeTyped(stringStrongTypedKey);
+
+        //Then
+        assertThat(result, is(nullValue()));
+    }
+
 }
